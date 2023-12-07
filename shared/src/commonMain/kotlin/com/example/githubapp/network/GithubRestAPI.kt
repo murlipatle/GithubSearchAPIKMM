@@ -1,4 +1,4 @@
-package com.example.githubapp
+package com.example.githubapp.network
 
 import com.example.githubapp.model.SearchData
 import io.ktor.client.HttpClient

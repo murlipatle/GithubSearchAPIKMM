@@ -1,0 +1,39 @@
+CREATE TABLE IF NOT EXISTS item_table (
+    id INTEGER PRIMARY KEY,
+    full_name TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    visibility TEXT NOT NULL,
+    stargazers_count INTEGER NOT NULL
+);
+
+
+removeAllItem:
+DELETE FROM item_table;
+
+selectAllSearch:
+SELECT item_table.*
+FROM item_table;
+
+
+-- Insert a list of items
+insertItem:
+INSERT OR REPLACE INTO item_table (id, full_name, name, description, visibility, stargazers_count) VALUES (?, ?, ?, ?, ?, ?);
+
+-- Update an item by ID
+updateItem:
+UPDATE item_table SET
+    full_name = ?,
+    name = ?,
+    description = ?,
+    visibility = ?,
+    stargazers_count = ?
+WHERE id = ?;
+
+-- Search items by name
+getItemByName:
+SELECT * FROM item_table WHERE name LIKE  ?;
+
+-- Delete items by name
+deleteItemByName:
+DELETE FROM item_table WHERE name = ?;

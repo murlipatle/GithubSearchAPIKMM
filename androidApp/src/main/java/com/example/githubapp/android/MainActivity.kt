@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -31,11 +33,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.githubapp.GithubRestAPI
+import com.example.githubapp.db.DatabaseDriverFactory
+import com.example.githubapp.network.GithubRestAPI
 import com.example.githubapp.model.Item
+import com.example.githubapp.network.ConnectionUtils
+import com.example.githubapp.repository.GithubRepository
 import kotlinx.coroutines.launch
 
 
@@ -52,12 +58,15 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val scope = rememberCoroutineScope()
                     var text by remember { mutableStateOf("") }
-                    var searchData by remember { mutableStateOf<List<Item>>(emptyList()) }
+                    var searchDataList by remember { mutableStateOf<List<Item>>(emptyList()) }
 
                     val searchQuery = remember { mutableStateOf("") }
 
                     val onSearchQueryChange: (String) -> Unit = { newValue ->
                         searchQuery.value = newValue
+                        if (newValue=="") {
+                            searchDataList = mutableListOf()
+                        }
                        // filteredItems.value = items.filter { it.contains(newValue, ignoreCase = true) }
                     }
 
@@ -73,6 +82,15 @@ class MainActivity : ComponentActivity() {
                             OutlinedTextField(
                                 value = searchQuery.value,
                                 onValueChange = onSearchQueryChange,
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Done
+                                ),
+                               /* keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        // Handle "Enter" action here
+                                    }
+                                ),*/
                                 leadingIcon = {
                                     Image(
                                         painter = painterResource(R.drawable.github_svgrepo_com),
@@ -82,7 +100,8 @@ class MainActivity : ComponentActivity() {
                                 trailingIcon = {
                                     if (searchQuery.value.isNotEmpty()) {
                                         IconButton(
-                                            onClick = { searchQuery.value = "" },
+                                            onClick = { searchQuery.value = ""
+                                                searchDataList = mutableListOf()},
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Close,
@@ -101,17 +120,21 @@ class MainActivity : ComponentActivity() {
                                     if (searchQuery.value.isNotEmpty()) {
                                         scope.launch {
                                             kotlin.runCatching {
-                                                GithubRestAPI().searchRepo(searchQuery.value)
+                                                text="Fetching the data..."
+                                                searchDataList = mutableListOf()
+                                                GithubRepository(DatabaseDriverFactory(this@MainActivity),
+                                                    ConnectionUtils(this@MainActivity)
+                                                ).getSearch(searchQuery.value)
                                             }.onSuccess {
-                                                searchData = it.items
-                                                Log.d("searchData", "onCreate: " + searchData)
+                                                searchDataList = it
+                                                text=""
+                                                Log.d("searchData", "onCreate: " + searchDataList)
                                             }.onFailure {
                                                 text = "error ${it.localizedMessage}"
                                                 Log.d(
                                                     "searchData",
                                                     "onCreate: " + it.localizedMessage
                                                 )
-
                                             }
                                         }
                                     }
@@ -131,7 +154,7 @@ class MainActivity : ComponentActivity() {
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .background(Color.White, RoundedCornerShape(4.dp))
                         ) {
-                            items(searchData) { item ->
+                            items(searchDataList) { item ->
                                 ListItem(item)
                             }
                         }
