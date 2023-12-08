@@ -44,5 +44,9 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.cardview)
+    implementation(libs.material)
+    implementation(libs.constraintlayout)
     debugImplementation(libs.compose.ui.tooling)
 }

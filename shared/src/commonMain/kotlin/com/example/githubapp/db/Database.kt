@@ -32,7 +32,7 @@ internal class Database(databaseDriverFactory: DatabaseDriverFactory) {
             }
     }
     internal fun getItemsByName(name: String): List<Item> {
-        return dbQuery.getItemByName(name).executeAsList()
+        return dbQuery.getItemByName("%$name%").executeAsList()
             .map {
                 Item(
                     id = it.id.toInt(),
